@@ -182,7 +182,9 @@ Meterpreter session established — drop into shell
 Back on Kali, the Meterpreter session opens automatically once the victim executes the payload.
 Type shell to obtain a native Windows command prompt on the victim.
 Confirmation: C:\Users\admin\Downloads> returned — full remote code execution achieved.<br/>
-<img src="https://imgur.com/Screenshot__157_" height="80%" width="80%" alt="Meterpreter shell — Windows CMD prompt on victim machine"/>
+<img width="1366" height="624" alt="Screenshot (157)" src="https://github.com/user-attachments/assets/fb7ca8b9-cf78-4bc1-b3bc-2b2ff25a45cf" />
+
+
 
 
 
@@ -193,7 +195,7 @@ Enumerate local users
 
 Command: net user
 Result: Accounts on \\DESKTOP-LOSP218 revealed — admin, Administrator, DefaultAccount, Guest, WDAGUtilityAccount.<br/>
-<img src="https://imgur.com/Screenshot__158_" height="80%" width="80%" alt="net user output enumerating local accounts"/>
+<img width="1366" height="156" alt="Screenshot (158)" src="https://github.com/user-attachments/assets/0406ad22-37b8-4f16-953c-08318b75d25e" />
 
 
 
@@ -204,7 +206,8 @@ Enumerate local groups
 
 Command: net localgroup
 Result: All local security groups listed, including Administrators, Remote Desktop Users, Guests, Hyper-V Administrators, and more.<br/>
-<img src="https://imgur.com/Screenshot__159_" height="80%" width="80%" alt="net localgroup enumerating all local groups"/>
+<img width="1366" height="441" alt="Screenshot (159)" src="https://github.com/user-attachments/assets/31c66219-5551-40f0-9087-f7088b4d2117" />
+
 
 
 
@@ -215,7 +218,8 @@ Gather network configuration
 
 Command: ipconfig
 Result: Victim IPv4 address confirmed as 192.168.20.10, Subnet Mask 255.255.255.0.<br/>
-<img src="https://imgur.com/Screenshot__160_" height="80%" width="80%" alt="ipconfig output confirming victim network config"/>
+<img width="1366" height="237" alt="Screenshot (160)" src="https://github.com/user-attachments/assets/3ce3afae-9b26-40cc-acc6-8338656bb582" />
+
 
 
 
@@ -228,7 +232,8 @@ Verify Splunk local config folder
 
 Navigate to C:\Program Files\Splunk\etc\system\local.
 Confirm existing config files are present: authentication.conf, server.conf, web.conf, etc.<br/>
-<img src="https://imgur.com/Screenshot__161_" height="80%" width="80%" alt="Splunk local config folder contents"/>
+<img width="981" height="598" alt="Screenshot (161)" src="https://github.com/user-attachments/assets/a2660d54-175b-4327-97c9-8eb625305438" />
+
 
 
 
@@ -239,7 +244,7 @@ Copy inputs.conf from Splunk defaults
 
 Navigate to C:\Program Files\Splunk\etc\system\default.
 Right-click inputs.conf → drag → Copy here into the local folder.<br/>
-<img src="https://imgur.com/Screenshot__162_" height="80%" width="80%" alt="Copying inputs.conf from default to local"/>
+<img width="975" height="596" alt="Screenshot (162)" src="https://github.com/user-attachments/assets/504371f3-749d-4dfd-8012-8bda3f430864" />
 
 
 
@@ -279,7 +284,8 @@ Add the following log source stanzas to forward events to the endpoint index:
       index = endpoint
       disabled = false
 <br/>
-<img src="https://imgur.com/Screenshot__166_" height="80%" width="80%" alt="inputs.conf configured with Sysmon and all Windows Event Log sources"/>
+<img width="1366" height="619" alt="Screenshot (166)" src="https://github.com/user-attachments/assets/a04b1e9c-c5a9-4e05-a848-c9afe094c6bd" />
+
 <br />
 
 19. **Confirm `inputs.conf` saved in local folder**
