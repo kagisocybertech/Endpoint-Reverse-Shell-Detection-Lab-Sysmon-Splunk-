@@ -290,13 +290,15 @@ Add the following log source stanzas to forward events to the endpoint index:
 
 19. **Confirm `inputs.conf` saved in local folder**
     - Right-click `inputs.conf` in the local folder to verify it is present and has been updated.<br/>
-<img src="https://imgur.com/Screenshot__163_" height="80%" width="80%" alt="inputs.conf confirmed in Splunk local folder"/>
+<img width="979" height="595" alt="Screenshot (163)" src="https://github.com/user-attachments/assets/4e379fbe-bc3b-446f-a40c-075107663776" />
+
 <br />
 
 20. **Verify the `endpoint` index in Splunk**
     - In Splunk, go to **Settings** → **Indexes** (via the Apps menu).
     - Confirm the `endpoint` index is listed as **Active**.<br/>
-<img src="https://imgur.com/Screenshot__168_" height="80%" width="80%" alt="Splunk Indexes page — endpoint index active"/>
+<img width="1366" height="537" alt="Screenshot (168)" src="https://github.com/user-attachments/assets/f4ed602a-c813-4c7c-bd21-947f711b80b7" />
+
 <br />
 
 ---
@@ -306,31 +308,36 @@ Add the following log source stanzas to forward events to the endpoint index:
 21. **Search the endpoint index — verify data ingestion**
     - In Splunk Search & Reporting, type: `index="endpoint"` and run.
     - Result: **1,458 events** returned — Windows and Sysmon logs are successfully flowing into Splunk.<br/>
-<img src="https://imgur.com/Screenshot__170_" height="80%" width="80%" alt="index=endpoint returns 1458 events confirming log ingestion"/>
+<img width="1366" height="534" alt="Screenshot (170)" src="https://github.com/user-attachments/assets/1f7113f5-bd72-4885-8d0a-37312ea3dd1d" />
+
 <br />
 
 22. **Search for the attacker's IP address**
     - Run: `index=endpoint 192.168.20.11`
     - Result: **46 events** containing the attacker's IP — a key Indicator of Compromise (IOC).<br/>
-<img src="https://imgur.com/Screenshot__171_" height="80%" width="80%" alt="Splunk search for attacker IP 192.168.20.11 returns 46 events"/>
+<img width="1366" height="539" alt="Screenshot (171)" src="https://github.com/user-attachments/assets/a4711f76-35c7-4732-8b74-a96441dc534a" />
+
 <br />
 
 23. **Analyse `dest_port` field — confirm C2 port 4444**
     - Click on the `dest_port` field in the sidebar.
     - Result: Port **4444** (Meterpreter C2 callback) is detected alongside port 3389, confirming the active reverse shell connection from victim to attacker.<br/>
-<img src="https://imgur.com/Screenshot__172_" height="80%" width="80%" alt="dest_port showing port 4444 C2 traffic from victim to attacker"/>
+<img width="1366" height="540" alt="Screenshot (172)" src="https://github.com/user-attachments/assets/862b9c7c-ad57-472d-9406-64eb92c34dc8" />
+
 <br />
 
 24. **Search for the malicious file directly**
     - Run: `index=endpoint Resume.pdf.exe`
     - Result: **16 events** all linked to the malicious payload. The timeline spike confirms the exact moment of execution.<br/>
-<img src="https://imgur.com/Screenshot__173_" height="80%" width="80%" alt="Splunk search for Resume.pdf.exe returns 16 events"/>
+<img width="1366" height="537" alt="Screenshot (173)" src="https://github.com/user-attachments/assets/d821a8cf-5e7c-4e49-9f71-dec53764f3ff" />
+
 <br />
 
 25. **Inspect EventCode values**
     - Click the `EventCode` field while the `Resume.pdf.exe` search is active.
     - Result: **EventCode 15** (Sysmon — FileCreateStreamHash) dominates at 37.5%, flagging that the file was downloaded via the browser and contains an Alternate Data Stream identifier (Zone.Identifier).<br/>
-<img src="https://imgur.com/Screenshot__174_" height="80%" width="80%" alt="EventCode analysis — EventCode 15 FileCreateStreamHash most frequent"/>
+<img width="1366" height="544" alt="Screenshot (174)" src="https://github.com/user-attachments/assets/384f22e8-615a-4041-80ff-d2bd00264b18" />
+
 <br />
 
 26. **Examine full Sysmon EventCode 15 event**
@@ -342,18 +349,21 @@ Add the following log source stanzas to forward events to the endpoint index:
       - `process_name`: `msedge.exe`
       - `EventDescription`: `FileCreateStreamHash`
       - `technique_id`: **T1189** — Drive-by Compromise<br/>
-<img src="https://imgur.com/Screenshot__175_" height="80%" width="80%" alt="Expanded Sysmon EventCode 15 showing full event fields for Resume.pdf.exe"/>
+<img width="1366" height="540" alt="Screenshot (175)" src="https://github.com/user-attachments/assets/3ba3b152-00ab-4d1a-8375-ac0069eae5da" />
+
 <br />
 
 27. **Review full IOC enrichment fields**
     - Scrolling further through the event reveals full file hashes (SHA1, SHA256, MD5, IMPHASH), `HostUrl` confirming the file was served from `192.168.20.11:9999/Resume.pdf.exe`, and `ZoneId=3` (Internet Zone — file came from an untrusted external source).<br/>
-<img src="https://imgur.com/Screenshot__176_" height="80%" width="80%" alt="Full Sysmon event fields — hashes, HostUrl, ZoneId for Resume.pdf.exe"/>
+<img width="1366" height="534" alt="Screenshot (176)" src="https://github.com/user-attachments/assets/972b73a3-11b9-44a3-9986-749ea75413f1" />
+
 <br />
 
 28. **Trace full process chain with process GUID**
     - Copy the `process_guid` value from the event and search: `index=endpoint {cd03015e-cbbc-69a5-c208-000000000700}`
     - Result: **6 events** returned, tracing all Sysmon activity linked back to the malicious process from execution to post-exploitation commands.<br/>
-<img src="https://imgur.com/Screenshot__179_" height="80%" width="80%" alt="Process GUID search tracing full Meterpreter process chain in Splunk"/>
+<img width="1366" height="535" alt="Screenshot (179)" src="https://github.com/user-attachments/assets/cb32ed65-1280-4f0b-88cb-9bc87d8d5567" />
+
 <br />
 
 29. **View post-exploitation commands in Statistics view**
@@ -363,7 +373,8 @@ Add the following log source stanzas to forward events to the endpoint index:
       - `cmd.exe` → `net localgroup`
       - `cmd.exe` → `ipconfig`
     - All attacker enumeration commands captured and attributed to the malicious parent process.<br/>
-<img src="https://imgur.com/Screenshot__180_" height="80%" width="80%" alt="Splunk statistics table showing post-exploitation commands spawned by Resume.pdf.exe"/>
+<img width="1536" height="930" alt="Screenshot (180)" src="https://github.com/user-attachments/assets/60dfb5c4-e8dc-44f6-b131-47b57991613c" />
+
 <br />
 
 ---
